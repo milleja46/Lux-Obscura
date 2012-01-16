@@ -1,48 +1,14 @@
 """ lux obscura """
 
-import pygame
 import spyral
-
+import pygame as pg
 SIZE = (640, 640)
-BG_COLOR = (0, 0, 0)
+BG_COLOR = (2, 255, 20)
 colors = {}
 images = {}
 geom = {}
 fonts = {}
 strings = {}
-
-class MenuItem(spyral.gui.MouseSprite):
-    """gui.MenuItem
-    MenuItem(text, item_id) : return menu_item
-
-    text -> str; the display text.
-    item_id -> int; the numeric ID; also the item_id attribute returned in the
-        pygame event.
-    
-    This class is not intended to be used directly. Use PopupMenu instead,
-    unless designing your own interface to this class.
-    """
-    
-    def __init__(self, text, item_id, action):
-        self.text = text
-        self.item_id = item_id
-        self.image = font.render(text, True, text_color)
-        self.rect = self.image.get_rect()
-        self.active = False
-        self.render()
-        self.action = action
-    def render(self):
-        if self.active:
-            self.image = fonts['menu_item'].render(self.text,
-                                                          True,
-                                                          colors['menuitem_active'])
-        else:
-            self.image = fonts['menu_item'].render(self.text,
-                                                   True,
-                                                   colors['menuitem_inactive'])
-    def on_click(self, ev):
-        pass
-
 
 class Game(spyral.scene.Scene):
     """
@@ -103,26 +69,66 @@ class Menu(spyral.scene.Scene):
         title.rect.top = 10
         title.rect.centerx = self.camera.get_rect().centerx
         
-        newGame = spyral.gui.MouseSprite()
+        newGame = spyral.sprite.Sprite()
         newGame.image = images['menu_newGame']
         newGame.rect.top = title.rect.bottom + 40
         newGame.rect.centerx = self.camera.get_rect().centerx
-        
-        self.group.add(title, newGame)
+        newGame.active = False
 
+        gameContinue = spyral.sprite.Sprite()
+        gameContinue.image = images['menu_gameContinue']
+        gameContinue.rect.top = newGame.rect.bottom + 5
+        gameContinue.rect.centerx = self.camera.get_rect().centerx
+        gameContinue.active = False
+
+        options = spyral.sprite.Sprite()
+        options.image = images['menu_Options']
+        options.rect.top = gameContinue.rect.bottom +5
+        options.rect.centerx = self.camera.get_rect().centerx
+
+        gameQuit =  spyral.sprite.Sprite()
+        gameQuit.image = images['menu_Quit']
+        gameQuit.rect.top = options.rect.bottom +5
+        gameQuit.rect.centerx = self.camera.get_rect().centerx
+        
+        self.group.add(title, newGame, gameContinue, options, gameQuit)
+        self.activeitems = [0, 1, 2, 3, 4]
+        self.active = 0
         
     def render(self):
         self.group.draw()
         spyral.director.get_camera().draw()
         
     def update(self, tick):
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+        for ev in pg.event.get():
+            if ev.type == pg.KEYDOWN:
+                if ev.key == pg.K_SPACE:
                     exit(0)
-                spyral.director.push(Pong())
-            if event.type == pygame.QUIT:
+                if ev.key == pg.K_UP:
+                    if self.active <= 0:
+                        self.active == 4
+                    else:
+                        self.active =  self.active - 1
+                if ev.key == pg.K_UP:
+                    if self.active >= 5:
+                        self.active = 0
+                    else:
+                        self.active += 1
+                if ev.key == pg.K_RETURN:
+                    if self.active == 0:
+                        exit(0)
+                        spyral.director.push(intro)
+                    if self.active == 1:
+                        pass
+                    if self.active == 2:
+                        pass
+                    if self.active == 3:
+                        pass
+                    if self.active == 4:
+                        exit(0)
+            if ev.type == pg.QUIT:
                 exit(0)
+                
 class intro(spyral.scene.Scene):
     def init(self):
         spyral.Scene.__init__(self)
@@ -172,17 +178,20 @@ if __name__ == "__main__":
     colors['bg'] = BG_COLOR
     colors['menu'] = (255, 255, 255)
 
-    geom['size'] = (640, 640)
+    geom['size'] = SIZE
     geom['width'] =  640
     geom['height'] = 640
     geom['menu_title_font_size'] = int(.20*geom['height'])
-    geom['menu_font_size'] = int(.06*geom['height'])
+    geom['menu_font_size'] = int(.12*geom['height'])
 
     strings['menu_title']= "Lux Obscura"
     strings['menu_newGame'] = "New Game"
+    strings['menu_gameContinue'] = "Continue"
+    strings['menu_Options'] = "Options"
+    strings['menu_Quit'] = "Quit"
 
-    fonts['menu'] = pygame.font.SysFont(None, geom['menu_font_size'])
-    fonts['menu_title'] = pygame.font.SysFont(None, geom['menu_title_font_size'])
+    fonts['menu'] = pg.font.SysFont(None, geom['menu_font_size'])
+    fonts['menu_title'] = pg.font.SysFont(None, geom['menu_title_font_size'])
 
 
     images['menu_title'] = fonts['menu_title'].render(
@@ -191,6 +200,18 @@ if __name__ == "__main__":
                             colors['menu'])
     images['menu_newGame'] = fonts['menu'].render(
                             strings['menu_newGame'],
+                            True,
+                            colors['menu'])
+    images['menu_gameContinue'] = fonts['menu'].render(
+                                  strings['menu_gameContinue'],
+                                  True,
+                                  colors['menu'])
+    images['menu_Options'] = fonts['menu'].render(
+                              strings['menu_Options'],
+                              True,
+                              colors['menu'])
+    images['menu_Quit'] = fonts['menu'].render(
+                            strings['menu_Quit'],
                             True,
                             colors['menu'])
     
